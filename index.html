@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Solutions</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #000000;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+header {
+    position: fixed; /* Changed to fixed */
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: #ffffff;
+    padding: 10px;
+    z-index: 1;
+}
+
+header img {
+    position: absolute;
+    left: 10px;
+    width: 150px;
+    height: auto ; /* Maintain aspect ratio */
+    background-color: #000000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 36px;
+    text-align: center;
+    flex: 1;
+}
+
+#bgVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+main {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    margin-top: 80px; /* Adjusted for header height */
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.login-form input {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.dashboard {
+    display: none;
+    width: 100%;
+    max-width: 800px; /* Set a max width for the dashboard */
+    margin: 0 auto; /* Center horizontally */
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.dashboard-content {
+    margin-bottom: 20px;
+}
+
+#adminDashboard, #employeeDashboard {
+    display: none;
+}
+
+#adminDashboard {
+    border: 1px solid #007bff;
+}
+
+#employeeDashboard {
+    border: 1px solid #28a745;
+}
+
+.task-list {
+    margin-top: 20px;
+    list-style: none;
+    padding: 0;
+}
+
+.task-list li {
+    padding: 10px;
+    background-color: #fff;
+    margin-bottom: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.task-list li.completed {
+    background-color: #d4edda;
+    text-decoration: line-through;
+}
+
+.logout-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.mark-done-button {
+    margin-left: 20px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.task-form {
+    display: none;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px; /* Set a max width for the task form */
+}
+
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="1-removebg-preview.png" alt="Tech Solutions Logo"> <!-- Update with your logo URL -->
+        <h1>Tech Solutions</h1>
+    </header>
+
+    <!-- Background video -->
+    <video id="bgVideo" autoplay muted loop>
+        <source src="3130284-uhd_3840_2160_30fps.mp4" type="video/mp4"> <!-- Update with your video URL -->
+        Your browser does not support the video tag.
+    </video>
+
+    <main>
+        <div class="login-form" id="loginForm">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+        </div>
+
+        <div class="dashboard" id="dashboard">
+            <div id="adminDashboard" class="dashboard-content">
+                <h2>Admin Dashboard</h2>
+                <button onclick="showTaskForm()">Create Task</button>
+                <ul class="task-list" id="taskList"></ul>
+            </div>
+
+            <div id="employeeDashboard" class="dashboard-content">
+                <h2>Employee Dashboard</h2>
+                <ul class="task-list" id="taskListEmployee"></ul>
+            </div>
+
+            <button class="logout-button" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="task-form" id="taskForm">
+            <h3>Create Task</h3>
+            <input type="text" id="taskTitle" placeholder="Task Title">
+            <input type="text" id="taskDescription" placeholder="Task Description">
+            <input type="date" id="taskDueDate">
+            <button onclick="createTask()">Create</button>
+        </div>
+    </main>
+
+    <footer>
+        &copy; Tech Solutions 2024
+    </footer>
+
+    <script>
+        // Simulate a simple user database
+        const users = {
+            'admin': { password: 'admin123', role: 'admin' },
+            'employee': { password: 'employee123', role: 'employee' }
+        };
+
+        // Retrieve tasks from localStorage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || {
+            admin: []
+        };
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (users[username] && users[username].password === password) {
+                localStorage.setItem('role', users[username].role);
+                renderDashboard(users[username].role);
+            } else {
+                alert('Login failed');
+            }
+        }
+
+        // Render Dashboard
+        function renderDashboard(role) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+
+            if (role === 'admin') {
+                document.getElementById('adminDashboard').style.display = 'block';
+                document.getElementById('employeeDashboard').style.display = 'none';
+                renderTaskList('admin');
+            } else if (role === 'employee') {
+                document.getElementById('adminDashboard').style.display = 'none';
+                document.getElementById('employeeDashboard').style.display = 'block';
+                renderTaskList('employee');
+            }
+        }
+
+        // Show Task Form for Admin
+        function showTaskForm() {
+            document.getElementById('taskForm').style.display = 'block';
+        }
+
+        // Create Task
+        function createTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+
+            const role = localStorage.getItem('role');
+            if (!role) return;
+
+            tasks.admin.push({ title, description, dueDate, completed: false });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTaskList('admin');
+            document.getElementById('taskForm').style.display = 'none';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskDueDate').value = '';
+        }
+
+        // Render Task List
+        function renderTaskList(role) {
+            const taskList = document.getElementById(role === 'admin' ? 'taskList' : 'taskListEmployee');
+            taskList.innerHTML = '';
+
+            tasks.admin.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${task.title} - ${task.description} (Due: ${task.dueDate})`;
+
+                if (task.completed) {
+                    li.classList.add('completed');
+                }
+
+                if (role === 'employee' && !task.completed) {
+                    const markDoneBtn = document.createElement('button');
+                    markDoneBtn.textContent = 'Mark as Done';
+                    markDoneBtn.classList.add('mark-done-button');
+                    markDoneBtn.onclick = () => markAsDone(index);
+                    li.appendChild(markDoneBtn);
+                }
+
+                taskList.appendChild(li);
+            });
+        }
+
+        // Mark task as done
+        function markAsDone(index) {
+            tasks.admin[index].completed = true;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTaskList('employee');
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('role');
+            location.reload();
+        }
+
+        // Automatically render dashboard if role is stored in localStorage
+        window.onload = function() {
+            const role = localStorage.getItem('role');
+            if (role) {
+                renderDashboard(role);
+            }
+        };
+    </script>
+</body>
+</html>
